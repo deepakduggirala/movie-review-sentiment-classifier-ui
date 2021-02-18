@@ -1,0 +1,92 @@
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;
+
+.movie-card {
+  height: 44rem;
+}
+
+@media (min-width: 576px) {
+  .movie-card {
+    height: 21rem;
+  }
+}
+
+.item-card {
+  height: 21rem;
+}
+
+@media (min-width: 576px) {
+  .item-card {
+    height: 21rem;
+  }
+}
+
+div::-webkit-scrollbar {
+  width: 0.3em;
+}
+
+div::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px white;
+}
+
+div::-webkit-scrollbar-thumb {
+  background-color: lightgrey;
+  outline: 1px solid whitesmoke;
+}
+
+/* div.review-text:hover {
+  overflow-y: auto;
+}
+
+div.review-text:focus {
+  overflow-y: auto;
+} */
+
+@layer base {
+  /* pre {
+    @apply bg-gray-900 rounded text-white font-mono text-base p-2 md:p-4;
+  } */
+
+  article.about pre code {
+    @apply text-base !important;
+  }
+
+  article.about code {
+    @apply break-words whitespace-pre-wrap text-base;
+  }
+
+  article.about a {
+    @apply text-green-500 no-underline hover:underline;
+  }
+
+  article.about ol {
+    @apply list-disc list-inside;
+  }
+
+  article.about ul {
+    @apply list-disc list-inside;
+  }
+
+  article.about li {
+    @apply py-1;
+  }
+
+  article.about p {
+    @apply py-3;
+  }
+
+  article.about h2 {
+    @apply text-4xl font-bold pt-6 pb-3 tracking-wide font-sans;
+  }
+
+  article.about h3 {
+    @apply text-3xl font-bold pt-6 pb-3 tracking-wide font-sans;
+  }
+
+  article.about h4 {
+    @apply text-2xl font-bold pt-6 pb-3 tracking-wide font-sans;
+  }
+}

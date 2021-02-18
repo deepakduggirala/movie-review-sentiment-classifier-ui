@@ -1,0 +1,8 @@
+<div class="w-full flex justify-center align-middle text-lg pb-12 tracking-wide px-5">
+      <span>Click on an image to see all reviews of that Movie / TV show or go back to <a class="font-extrabold tracking-wider hover:underline text-indigo-500" href="/">Trending</a></span>
+    </div>
+<section class="grid lg:grid-cols-2 grid-cols-1 gap-6 pb-10 lg:px-28 md:px-12 px-5">
+{{#each reviews}}
+    {{> reviewcard}}
+{{/each}}      
+</section>

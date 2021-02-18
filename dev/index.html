@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Movie Reviews Sentiment Analysis</title>
+</head>
+
+<body class="antialiased pb-20">
+  <main>
+    <header class="flex flex-wrap items-center py-2 border-b-2">
+      <div class="w-6/12 font-bold p-3 tracking-wider text-2xl">
+        <a href="https://www.linkedin.com/in/deepak-duggirala/" target="_blank" class="hover:underline">
+          Deepak Duggirala
+        </a>
+      </div>
+      <div class="w-0 md:w-4/12"></div>
+      <div class="w-4/12 md:w-1/12 p-2 font-bold tracking-widest text-lg">
+        <a href="about.html" class="hover:underline">
+          About
+        </a>
+      </div>
+      <div class="w-2/12 md:w-1/12">
+        <a href="https://github.com/deepakduggirala" target="_blank">
+          <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub"
+            class="w-12">
+        </a>
+      </div>
+    </header>
+    <div class="w-full flex justify-center align-middle text-4xl pt-10 tracking-wider font-bold text-indigo-500 px-5">
+      <a href="/" class="hover:underline">
+        Movie Reviews Sentiment Analysis
+      </a>
+    </div>
+    <div class="w-full flex justify-center align-middle text-xl pt-4 pb-4 tracking-wider px-5">
+      <span>An End-to-End Machine Learning Project Classifying <span class="font-bold">Live</span> Reviews of Trending Movies and TV Shows from <a class="text-indigo-500 font-extrabold tracking-wider hover:underline" href="https://www.themoviedb.org/">TMDB</a></span>
+    </div>
+    <div class="w-full flex justify-center align-middle text-lg pb-12 tracking-wide px-5">
+      <span>Click on an image to see all reviews of that Movie / TV show or see <a class="font-extrabold tracking-wider hover:underline text-indigo-500" href="/reviews/trending">All Trending Reviews</a></span>
+    </div>
+    <section class="grid lg:grid-cols-2 grid-cols-1 gap-6 pb-10 lg:px-28 md:px-12 px-5">
+      <div class="">
+        <!-- bg-gradient-to-br from-yellow-200 via-red-300 to-pink-300 hover:from-yellow-400 hover:via-red-500 hover:to-pink-500 -->
+        <!-- bg-gradient-to-tr from-green-100 via-green-300 to-indigo-200 hover:from-green-300 hover:via-green-500 hover:to-indigo-400 -->
+        <div class="bg-gradient-to-br from-yellow-200 via-red-300 to-pink-300 hover:from-yellow-400 hover:via-red-500 hover:to-pink-500 flex items-center p-2 overflow-hidden relative rounded-xl shadow-2xl">
+          <div class="w-full max-w-6xl rounded bg-white shadow-xl mx-auto text-gray-800 relative md:text-left">
+            <div class="grid md:grid-cols-3 md:gap-x-2 md:gap-y-0 grid-rows-9 gap-y-1 movie-card">
+              
+              <div class="md:col-span-1 md:row-span-full md:px-4 md:py-4 px-2 py-2 row-span-4">
+                <a href="" target="_blank">
+                  <div class="h-full rounded" style="background: url(https://image.tmdb.org/t/p/w500/k68nPLbIST6NP96JmTxmZijEvCA.jpg); background-size: cover;">
+                    &nbsp;
+                  </div>
+                </a>
+              </div>
+
+              <div class="md:col-span-2 md:row-span-full md:px-4 px-2 overflow-y-auto row-span-4">
+                <a href="" target="_blank">
+                  <h1 class="font-bold uppercase lg:text-2xl text-xl">TENET</h1>
+                  <h3 class="lg:text-xl text-lg mb-5 underline">A review by SWITCH</h3>
+                </a>
+                
+                  <p class="text-sm">
+                    Great watch, will likely watch again, and do recommend.
+                    <br><br> 
+                    This is probably one of the best assassin movies I've ever seen ("Smokin' Aces", "Kill Me Three Times" and "Hanna" come to mind as others), the best thing it does is be refreshing, normally when a "character comes home after a long time away" trope happens, it's all about re-integrating, and how that affects the family, and it becomes a dark dramedy about dysfunctional families.
+                    <br><br>
+                    I'm not saying it doesn't to that, to a degree, but it does it in a spectacular way, and keeps it brief. It would actually be a solution to the main adversity of the movie, but because the premise is that she drags her work home with her, it's all about survival.
+                    <br><br>
+                    Jessica Chastain, Colin Ferrell, and (especially) John Malkovich do an amazing job on rather down to Earth (if a bit psychotic and brutal) action sequences.
+                    <br><br>
+                    While there is a lot going on around the story, the real focus, and it's worth it, her just trying to live through the organization she joined which she knows has to end in either her or the company's death.
+                    <br><br>
+                    I do feel like the worst of it is just that Diana Silvers sort of got sidelined, but I'm hoping that the sequel will focus on her quite a bit
+                  </p>
+              </div>
+
+              <!-- bg-indigo-50 -->
+              <div class="text-center md:col-span-full px-2 py-1 border-t-2 row-span-1 text-gray-900 bg-red-50 bg-opacity-60">
+                Prediction: <span class="font-extrabold uppercase"> POSITIVE </span> review with <span class="font-extrabold">65%</span>  confidence
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+</body>
+
+</html>

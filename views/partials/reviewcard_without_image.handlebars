@@ -1,0 +1,26 @@
+<div class="">
+  <!-- bg-gradient-to-br from-yellow-200 via-red-300 to-pink-300 hover:from-yellow-400 hover:via-red-500 hover:to-pink-500 -->
+  <!-- bg-gradient-to-tr from-green-100 via-green-300 to-indigo-200 hover:from-green-300 hover:via-green-500 hover:to-indigo-400 -->
+  <div class="{{#if this.isPositive}} bg-gradient-to-tr from-green-100 via-green-300 to-indigo-200 hover:from-green-300 hover:via-green-500 hover:to-indigo-400 {{else}} bg-gradient-to-br from-yellow-200 via-red-300 to-pink-300 hover:from-yellow-400 hover:via-red-500 hover:to-pink-500 {{/if}}  flex items-center p-2 overflow-hidden relative rounded-xl shadow-2xl">
+    <div class="w-full max-w-6xl rounded bg-white shadow-xl mx-auto text-gray-800 relative md:text-left">
+      <div class="grid md:grid-cols-2 md:gap-x-2 md:gap-y-0 grid-rows-9 gap-y-1 movie-card">
+
+        <div class="md:col-span-2 md:row-span-full md:px-4 px-2 overflow-y-auto row-span-8">
+          <a href="" target="_blank">
+            <h3 class="lg:text-xl font-bold text-lg mb-5 hover:underline">Review by {{this.author}}</h3>
+          </a>
+          
+            <p class="text-sm">
+              {{{this.content}}}
+            </p>
+        </div>
+
+        <!-- bg-indigo-50 -->
+        <div class="text-center md:col-span-full px-2 py-1 border-t-2 row-span-1 text-gray-900 {{#if this.isPositive}} bg-indigo-50 {{else}} bg-red-50 {{/if}} bg-opacity-60">
+          Prediction:  <span class="font-extrabold uppercase"> {{this.reviewClf}} </span> review with <span class="font-extrabold">{{this.reviewConfidence}}%</span>  confidence
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

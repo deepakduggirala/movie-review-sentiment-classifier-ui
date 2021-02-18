@@ -1,0 +1,43 @@
+<div class="w-full flex justify-center align-middle text-lg pb-12 tracking-wide px-5">
+      <span>See <a class="font-extrabold tracking-wider hover:underline text-indigo-500" href="/reviews/trending">Random Reviews</a> or go back to <a href="/" class="font-extrabold tracking-wider hover:underline text-indigo-500">Trending</a></span>
+    </div>
+<div class="bg-gradient-to-r from-blue-300 {{#if this.isFresh}} via-green-200 {{else}} via-pink-200 {{/if}} to-gray-100 grid grid-cols-3 lg:grid-rows-5 grid-rows-3 lg:px-28 md:px-12 px-5 gap-2 py-10" style="height: 25rem;">
+   
+  <div class="lg:col-span-1 col-span-2 row-span-full">
+    <a href="{{this.mediaUrl}}" target="_blank">
+      <div class="lg:w-6/12 w-full h-full max-w-6xl rounded bg-white shadow-2xl mx-auto text-gray-800 relative md:text-left">
+        <div class="px-2 py-2 h-full rounded" style="background: url({{this.posterUrl}}); background-size: cover; background-position: center;">
+          &nbsp;
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="lg:col-span-2 col-span-1 row-span-1 item-cardmy-auto lg:text-2xl font-extrabold tracking-wider text-lg lg:block hidden">
+    {{this.title}}
+  </div>
+
+  <div class="lg:col-span-2 col-span-1 row-span-1 item-cardmy-auto lg:text-xl text-lg lg:block hidden overflow-hidden">
+    <span class="font-bold">Overview:</span>
+    <span class="text-base">{{this.overview}}</span>
+    
+  </div>
+
+  <div class="lg:col-span-2 col-span-1 row-span-1 item-cardmy-auto lg:text-xl text-lg my-auto">
+    Score: <span class="font-bold">{{this.ratingScore}}%</span>  ({{this.vote_count}} votes)
+  </div>
+  <div class="lg:col-span-2 col-span-1 row-span-1 item-cardmy-auto lg:text-xl text-lg my-auto">
+    Reviews: <span class="font-bold">{{this.numReviews}}</span>
+  </div>
+  <div class="lg:col-span-2 col-span-1 row-span-1 item-cardmy-auto lg:text-xl text-lg my-auto">
+    Positive Reviews: <span class="font-bold">{{this.posReviewPercentage}}%</span>
+  </div>
+</div>
+
+ <section class="grid lg:grid-cols-2 grid-cols-1 gap-6 py-10 lg:px-28 md:px-12 px-5">
+
+  {{#each this.reviews}}
+      {{> reviewcard_without_image}}
+  {{/each}}    
+
+</section>

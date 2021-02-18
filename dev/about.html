@@ -1,0 +1,393 @@
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0107)file:///private/var/folders/y4/mh9xjjcx1sb3gh97sj_bx5n9rkk17p/T/Movie%20Reviews%20Sentiment%20Analysis.html -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="generator" content="Zettlr">
+  <meta name="date" content="February 18, 2021 at 12:31 AM">
+  <link href="prism.css" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css">
+  <title>Movie Reviews Sentiment Analysis.md</title>
+
+</head>
+
+<body class="about antialiased">
+  <article class="container w-full md:max-w-3xl mx-auto pt-20 px-4 md:px-6 text-xl text-gray-800 leading-normal" style="font-family:Georgia,serif;">
+    <p>I wanted to know what it takes to create and deploy an machine learning model from training the model to running
+      it on real-world data. This is my attempt at creating an end-to-end ML app and this page documents the code, links to resources, design
+      process and the reasons for doing a particular thing when numerous choices exist.</p>
+      
+    <p>
+      Since there is no easy and official way to get IMDB reviews I turned to <a
+        href="https://developers.themoviedb.org/3/movies/get-movie-reviews">The Movie Databse TMDb</a>. TMDb provides a
+      neat and consistent API to fetch nearly everything that appears on their website. One can get the API key <a
+        href="https://www.themoviedb.org/settings/api">here</a> by creating an account.</p>
+    <p>The code is organized into three repositories:</p>
+    <ol>
+      <li><a href="https://github.com/deepakduggirala/movie-review-sentiment-classifier-model">Model</a></li>
+      <li><a href="https://github.com/deepakduggirala/movie-review-sentiment-classifier-app">Inference API</a></li>
+      <li><a href="https://github.com/deepakduggirala/movie-review-sentiment-classifier-ui">UI</a></li>
+    </ol>
+
+    <div class="toc">
+
+    <h3 id="model">Model</h2>
+    <p>GitHub Repo: <a
+        href="https://github.com/deepakduggirala/movie-review-sentiment-classifier-model">https://github.com/deepakduggirala/movie-review-sentiment-classifier-model</a>
+    </p>
+    <p>I chose a linear model to get started quickly and set up the pipeline. I can always revisit the model to improve
+      the accuracy once the entire pipeline is set-up. I started with this <a
+        href="https://www.kaggle.com/lakshmi25npathi/sentiment-analysis-of-imdb-movie-reviews">Kaggle Notebook</a> but
+      switched out most of the code with my own.</p>
+    <h3 id="data">Data</h3>
+    <p>I downloaded the data from <a
+        href="https://www.kaggle.com/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews">Kaggle</a> which is taken from
+      <a href="http://ai.stanford.edu/~amaas/data/sentiment/">Large Movie Review Dataset</a></p>
+    <p>Even though the dataset is supposed to split into 25k training and 25k test data, I thought 50:50 split is
+      wasteful and split it into 40K training and 10k test examples.</p>
+    <h3 id="training">Training</h3>
+    <p>Step1: Text Preprocessing:</p>
+    <ul>
+      <li>Strip HTML tokens</li>
+      <li>Replace accented characters with ascii</li>
+      <li>Expand contractions</li>
+      <li>Lowercase text</li>
+      <li>Remove extra newlines</li>
+      <li>Lemmatize text</li>
+      <li>Remove special characters and digits</li>
+      <li>Remove extra spaces</li>
+      <li>Remove Stop Words</li>
+    </ul>
+    <p>Source: <a
+        href="https://towardsdatascience.com/a-practitioners-guide-to-natural-language-processing-part-i-processing-understanding-text-9f4abfd13e72">https://towardsdatascience.com/a-practitioners-guide-to-natural-language-processing-part-i-processing-understanding-text-9f4abfd13e72</a>
+    </p>
+    <p>Step2: After processing the text turn them into 1&amp;2 gram tokens.</p>
+    <p>Step3: Filter tokens which frequently as well as the tokens that rarely occur using TF-IDF</p>
+    <pre><code class="python language-python">normalize_text_transformer = FunctionTransformer(normalize_corpus)
+tfidf = TfidfVectorizer(min_df=2, max_df=0.5, ngram_range=(1, 2))
+lr = LogisticRegression(penalty='l2',max_iter=500,random_state=42)
+
+pipeline = Pipeline([
+    ('normalize_text', normalize_text_transformer),
+    ('tfidf', tfidf),
+    ('lr', lr)
+])</code></pre>
+    <h3 id="performance-metrics">Performance Metrics</h3>
+    <p>Training Accuracy: 0.951575</p>
+    <p>Metrics on the Test Set:</p>
+    <ul>
+      <li>Accuracy: 0.8993</li>
+      <li>Precision: 0.8904</li>
+      <li>Recall: 0.9106</li>
+      <li>F1 Score: 0.9004</li>
+    </ul>
+    <h3 id="serializing-and-saving-the-model">Serializing and saving the model</h3>
+    <pre><code class="python language-python">import joblib
+joblib.dump(pipeline, 'tf-idf-linear-regression.pkl')</code></pre>
+    <p>When joblib serializes pipeline it remembers the import information of the objects in it. If you used custom
+      transformers you need it define exactly the same way as they were when the pipeline is save when you load it back
+      again.</p>
+    <p>For this reason, define all the code that goes into pipeline in a separate module, that can imported the same way
+      in the server.</p>
+    <pre><code class="python language-python"># In the Jupyter Notebook
+from build_library.utils import normalize_corpus
+normalize_text_transformer = FunctionTransformer(normalize_corpus)
+
+# build pipelin
+pipeline = Pipeline([
+    ('normalize_text', normalize_text_transformer),
+    ('tfidf', tfidf),
+    ('lr', lr)
+])
+
+# save pipeline
+joblib.dump(pipeline, 'tf-idf-linear-regression.pkl')</code></pre>
+    <pre><code class="python language-python"># In Server
+from build_library.utils import normalize_corpus
+
+def load_model():
+    return joblib.load('tf-idf-linear-regression.pkl')</code></pre>
+    <p>Source: <a
+        href="https://rebeccabilbro.github.io/module-main-has-no-attribute/">https://rebeccabilbro.github.io/module-main-has-no-attribute/</a>
+    </p>
+    <h3 id="inference-api">Inference API</h2>
+    <p>GitHub Repo: <a
+        href="https://github.com/deepakduggirala/movie-review-sentiment-classifier-app">https://github.com/deepakduggirala/movie-review-sentiment-classifier-app</a>
+    </p>
+    <h3 id="flask-server">flask server</h3>
+    <p>I used flask because, I wanted a straightforward and simple server as I have only one path to expose as a
+      service, which is /predict. </p>
+    <h3 id="pipenv">pipenv</h3>
+    <p><code>pipenv</code> is the <code>yarn</code> of Python Universe. It figures out which versions of dependencies to
+      downloads, installs them and creates a lock file to reproduce the same environment years later, even if the some
+      of the packages increase versions. </p>
+    <pre><code class="bash language-bash"># Install pipenv
+pip install pipenv
+
+# start the virtual environment
+pipenv shell
+
+# Install dependencies
+pipenv install flask numpy beautifulsoup4 unidecode contractions nltk
+
+# Generate the lock file and finalize before deploying
+pipenv lock</code></pre>
+    <p>See more of Pipenv here: <a href="https://realpython.com/pipenv-guide/">https://realpython.com/pipenv-guide/</a>
+    </p>
+    <h3 id="containerization">Containerization</h3>
+    <pre><code class="docker language-docker">FROM python:3.9-buster
+
+# From Google Cloud Run Tutorials
+# Allow statements and log messages to immediately appear in the Knative logs
+ENV PYTHONUNBUFFERED True
+
+# Set the initial working directory for the image to the /app folder
+ENV APP_HOME /app
+WORKDIR $APP_HOME
+
+# Adds Pipfile and Pipefile.lock into the image in the /app folder.
+COPY Pipfile* /app/
+
+# In conjuction with copying the Pipfile &amp; Pipefile.lock above
+# this will install the pipenv tool, and then install all of the
+# defined dependencies for this application as part of the image.
+RUN pip install --upgrade pip pipenv &amp;&amp; \
+    pipenv lock -v --keep-outdated --requirements &gt; requirements.txt &amp;&amp; \
+    pip install -r requirements.txt
+
+# The app folder is copied towards the end of the image creation
+# since it tends to change more often than the previous steps,
+# and therefore we can take advantage of Docker's caching to speed
+# up subsequent builds which leads to a faster build/rebuild cycle.
+
+COPY app /app
+
+# From Google Cloud Run Tutorials
+# Run the web service on container startup. Here we use the gunicorn
+# webserver, with one worker process and 8 threads.
+# For environments with multiple CPU cores, increase the number of workers
+# to be equal to the cores available.
+
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app:app</code></pre>
+    <p>I struggled starting the application with <code>pipenv run</code> starting <code>gunicorn</code>. So I generated
+      requirements.txt using pipenv and then installed these dependencies using </p>
+    <h4 id="test-in-local">Test in Local</h4>
+    <pre><code class="bash language-bash"># Build the image
+docker build -t movie-review-sentiment-clf
+
+# Run it
+# --rm: the container after stopping
+# -d: run the container in detached mode
+# -p: expose the container port on local netowrk
+# --env: Before starting the container set these as environment variables
+docker run --rm -d -p 8080:8080 --env PORT=8080 movie-review-sentiment-clf
+
+# See the logs
+docker logs
+
+#Stop the container
+docker stop $container_ID</code></pre>
+    <h3 id="deployment">Deployment</h3>
+    <p>As per some of the blog posts, I tried to deploy this docker image in Amazon Web Services EC2 Virtual Machines. I
+      installed docker after spinning up a default VM with port 80 exposed in security groups</p>
+    <pre><code class="bash language-bash">sudo amazon-linux-extras install docker
+
+sudo yum install docker
+
+sudo service docker start
+
+sudo usermod -a -G docker ec2-user</code></pre>
+    <p>Uploaded my project directory and built the docker image and ran it. </p>
+    <p>But the free tier offers only upto 1GB memory and I noticed that it isn’t sufficient to run the container.</p>
+    <p>For this reason, I switched to Google Cloud Run which can natively support running docker images</p>
+    <h4 id="google-cloud-run">Google Cloud Run</h4>
+    <p>I set up a project in GCP, enabled cloud run, cloud registry and cloud build. Apart from the Google Cloud
+      Registry rest of them have a free tier.</p>
+    <p>I followed this tutorial to set up cloud run: <a
+        href="https://cloud.google.com/run/docs/quickstarts/prebuilt-deploy">https://cloud.google.com/run/docs/quickstarts/prebuilt-deploy</a>
+    </p>
+    <h4 id="google-cloud-registry">Google Cloud Registry</h4>
+    <p>Tutorial: <a
+        href="https://cloud.google.com/container-registry/docs/quickstart">https://cloud.google.com/container-registry/docs/quickstart</a>
+    </p>
+    <p>Pricing: <a
+        href="https://cloud.google.com/container-registry/pricing">https://cloud.google.com/container-registry/pricing</a>
+    </p>
+    <h4 id="push-docker-images-to-google-container-registry">Push Docker images to google container registry</h4>
+    <pre><code class="language-bash">gcloud auth login
+docker tag 64dc240a9174 us.gcr.io/movie-review-sentiment-clf/movie-review-sentiment-clf
+docker push us.gcr.io/movie-review-sentiment-clf/movie-review-sentiment-clf</code></pre>
+    <h4 id="google-cloud-build">Google Cloud Build</h4>
+    <p>Tutorial: <a
+        href="https://cloud.google.com/build/docs/quickstart-deploy">https://cloud.google.com/build/docs/quickstart-deploy</a>
+    </p>
+    <p>Pricing: <a href="https://cloud.google.com/build/pricing">https://cloud.google.com/build/pricing</a></p>
+    <p>Configuring cloud build allows you to deploy newer images after a code push to GitHub.</p>
+    <h3 id="ui">UI</h2>
+    <p>GitHub Repo: <a
+        href="https://github.com/deepakduggirala/movie-review-sentiment-classifier-ui">https://github.com/deepakduggirala/movie-review-sentiment-classifier-ui</a>
+    </p>
+    <p>For UI the plan is to create 3 pages</p>
+    <ul>
+      <li>A page to show the trending movies and TV shows (<code>/</code>)</li>
+      <li>Another one to show all the reviews for a selected movie or TV show (<code>/reviews/:media_type/:id</code>)
+      </li>
+      <li>A page to randomly select movies and TV shows and display a random review from them
+        (<code>/reviews/trending</code>)</li>
+    </ul>
+    <p>I chose to use Javascript on the Server (node.js) because it incredibly easy to make asynchronous calls to
+      multiple APIs that can depend on the data of previous calls. Here, I need to call multiple endpoints on TMDb and
+      Inference API for each result from the previous step. In other languages, to acheive this I would need to either
+      use Threads or an Event loop library, but this is native to Javascript using Promises.</p>
+    <p>The below code makes an API call to get the trending movie, then multiple concurrent API calls to get the reviews
+      for each movie / TV show, then shuffles them randomly and picks <code>maxReviewsPerMedia</code> reviews for each
+      movie, flattens the array and then finally returns before shuffling randomly all the items again,</p>
+    <pre><code class="javascript language-javascript">function getTrendingReviews(maxReviewsPerMedia, trendingPage) {
+    trendingPage = trendingPage || randInt(1,11)
+    maxReviewsPerMedia = maxReviewsPerMedia || 1
+    return getTrending(trendingPage)
+      .then(mediaItems =&gt; {
+          return Promise.allSettled(mediaItems.map(item =&gt; {
+              return getReviews(item.media_type, item.id)
+                  .then(reviews =&gt; {
+                    shuffled_review = random_shuffle(reviews)
+                    return shuffled_review
+                        .slice(0, maxReviewsPerMedia)
+                        .map(review =&gt; getReviewCardData(item, review))
+              })
+          }));
+  })
+      .then(results =&gt; {
+          return random_shuffle(results
+            .filter(result =&gt; result.status === 'fulfilled')
+            .map(result =&gt; result.value)
+            .flat()
+            )
+  })
+}</code></pre>
+    <h3 id="server-rendering-with-handlebars">Server Rendering with Handlebars</h3>
+    <p>As there are only three pages, all of them to display the data, no components to take user input, and virtually
+      no state to manage between pages, I chose not to use any front-end frameworks (React, Vue.js) and using javascript
+      on the client side (jquery) quickly turns into a quite a mess.</p>
+    <p>This leaves with only one option that is to construct all the HTML needed on the server side. </p>
+    <p>There are many <a href="https://expressjs.com/en/resources/template-engines.html">template engines</a> to use
+      with Express. I used <a href="https://github.com/express-handlebars/express-handlebars">express-handlebars</a>
+      which is an implementation of <a href="https://github.com/handlebars-lang/handlebars.js">handlebarsjs</a> for
+      Express server since I used this before in my work.</p>
+    <p>This view engine organizes the pages into heirarchies.</p>
+    <ul>
+      <li>Layout Code: views/layouts/main.handlebars</li>
+      <li>Functional Components: views/*.handlebars</li>
+      <li>Partials: views/partials/*.handlebars</li>
+    </ul>
+    <p>The common code with <code>Doctype</code>, <code>&lt;head&gt;</code>, <code>&lt;body&gt;</code> goes into
+      <code>views/layouts/main.handlebars</code>. The code for each page gets its own file in <code>views/</code>. This
+      file is referenced when in <code>res.render</code></p>
+    <h3 id="tailwinds-css">Tailwinds CSS</h3>
+    <p>Use wonderfully named CSS class names to style the page. See the docs <a
+        href="https://tailwindcss.com/docs">here</a></p>
+    <p>I saw this youtube video get started with TailwindCSS: <a
+        href="https://www.youtube.com/watch?v=UBOj6rqRUME">https://www.youtube.com/watch?v=UBOj6rqRUME</a></p>
+    <p>Install tailwindcss</p>
+    <pre><code class="bash language-bash"># Install tailwindcss
+npm install tailwindcss postcss autoprefixer</code></pre>
+    <p>Add the build step to package.json to run it as an npm sccript</p>
+    <pre><code class="json language-json">"scripts": {
+    "build:css": "export NODE_ENV=production; tailwind build src/style.css -o dist/style.css",
+    "dev:css": "tailwind build src/style.css -o dev/style.css",
+    "start": "node index.js"
+},</code></pre>
+    <p>Create dev and dist directories, <code>npm run build:css</code> creates a minimal style.css in
+      <code>./dist</code> and <code>npm run dev:css</code> creates a full style.css in <code>./dev</code></p>
+    <p><code>./dev</code> contains <code>index.html</code> and other files that I use to develope iteratively and
+      <code>./dist</code> contains <code>style.css</code> and <code>favicon.ico</code> that is used by the Express to
+      serve static files.</p>
+    <p>Create <code>./src/style.css</code> to keep the custom css classes.</p>
+    <p>Create tailwind.config.js using <code>npx tailwindcss init</code>. (see more details <a
+        href="https://tailwindcss.com/docs/configuration">here</a>). </p>
+    <p>Normally, <code>tailwind build src/style.css -o dist/style.css</code> creates a style.css with 3.73 MB with
+      150,000 lines of code. If you want to generate style.css for only the classes used in code, add all the handlebars
+      files in purge key of <code>tailwind.config.css</code> and run
+      <code>tailwind build src/style.css -o dist/style.css</code> with environment variable
+      <code>NODE_ENV=production</code></p>
+    <pre><code class="javascript language-javascript">module.exports = {
+    purge: [
+        './views/*.handlebars',
+        './views/layouts/*.handlebars',
+        './views/partials/*.handlebars'
+    ],
+    ...</code></pre>
+    <h4 id="ui-design">UI Design</h4>
+    <ul>
+      <li>I used cards to display most of the data and I had fun making everything colorful :)</li>
+      <li>The most difficult for me is the reponsive web design because I wanted to make the UI look good even on
+        mobiles. Writing screen size aware code and fixing layout glitches took up bulk of my time spent on this
+        project.</li>
+    </ul>
+    <h3 id="deployment-1">Deployment</h3>
+    <p>I used Heroku to deploy this node.js app because I already used it for deploying a sample node.js application
+      before. Hosting is free here but Heroku scales down your app when there are no requests for half hour.</p>
+    <p>The deployment couldn’t be any simpler as it’s just a git push. Because heroku makes assumptions about your
+      project, the simple default projects doesn’t need deployment configuration.</p>
+    <p>Heroku clones your repo, install dependencies from package.json using <code>npm install</code> and runs
+      <code>npm start</code> to start the application. Heroku also expects your app to run on port specified by the
+      environment variable <code>PORT</code></p>
+    <p>I followed this <a
+        href="https://devcenter.heroku.com/articles/getting-started-with-nodejs?singlepage=true">guide</a> to deploy my
+      application.</p>
+    <h4 id="first-steps">First Steps:</h4>
+    <pre><code class="bash language-bash"># install heroku cli
+brew install heroku/brew/heroku
+
+# login
+heroku login
+
+# change to your project directory
+cd movie-review-sentiment-classifier-ui
+
+# create an application on heroku. This create git repo and adds "heroku" remote
+heroku create
+
+# Deploy
+git push heroku master
+
+# Open the deployed application in browser
+heroku open
+
+# See application logs
+heroku logs --tail</code></pre>
+    <h4 id="recurring-steps">Recurring Steps:</h4>
+    <pre><code class="bash language-bash">git add .
+git commit -m "changes..."
+git push heroku master
+heroku logs --tail</code></pre>
+    <h4 id="changing-application-name">Changing Application Name</h4>
+    <p>The name of application is randomly generated when <code>heroku create</code> is ran. This name is also used in
+      application’s URL. This can be changed in Heroku UI -&gt; Dashboard -&gt; project -&gt; Settings. After changing
+      this remove the heroku remote and add new remote</p>
+    <pre><code class="bash language-bash">git remote remove heroku
+git remote add heroku https://git.heroku.com/review-clf-deepak-duggirala.git
+git push heroku master</code></pre>
+    
+    <h4 id="environment-variables">Environment Variables</h4>
+    <p>In your app’s setting you can add the environment variables the app expects using Config Vars section or using
+      the cli</p>
+    <pre><code class="bash language-bash"># export TIMES=2
+heroku config:set TIMES=2
+
+# see all config
+heroku config</code></pre>
+
+<h3 id="this-page">This Page</h3>
+<p>This page uses <a href="https://www.tailwindtoolbox.com/templates/minimal-blog">https://www.tailwindtoolbox.com/templates/minimal-blog</a> template and <a href="https://prismjs.com/index.html">PrismJS</a> for code highlighting.</p>
+
+  </article>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script src="prism.js"></script>
+  <script src="toc.js"></script>
+</body>
+
+</html>
